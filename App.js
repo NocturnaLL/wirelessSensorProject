@@ -1,6 +1,7 @@
 import React from 'react';
-import {StyleSheet, Text, View, Button, Alert} from 'react-native';
+import {StyleSheet, ImageBackground,Text, View, Button, Alert} from 'react-native';
 import MapView from 'react-native-maps';
+import Title from './app/components/Title/Title';
 export default class App extends React.Component {
   constructor(props) {
     super(props);
@@ -26,32 +27,52 @@ export default class App extends React.Component {
   }
 
   TestFunction() {
-  Alert.alert("Car location added.");
+    Alert.alert("Car location saved");
   }
   render() {
     return (
-      <View style={styles.container}>
-      
-        <Button onPress={ this.TestFunction } title="Car Location" color="#009688" />
+      <ImageBackground source={require('./app/components/BackgroundImage/car4.jpg')} style={styles.container}>
+      <View style={styles.inner}>
+
+        <Title />
+        <Text style={styles.buttonText}>Latitude = {this.state.latitude}</Text>
+        <Text style={styles.buttonText}>Longitude = {this.state.longitude}</Text>
         <MapView style={styles.map}
           region={{
             latitude:Number(this.state.latitude),
             longitude:Number(this.state.longitude),
-            latitudeDelta:0.1,
-            longitudeDelta:0.1
+            latitudeDelta:0.01,
+            longitudeDelta:0.01
           }}
         >
+        <MapView.Marker
+          coordinate={{
+            latitude:Number(this.state.latitude)+0.001,
+            longitude:Number(this.state.longitude+0.001)
+          }}
+          title={"My car"}
+          description={"My car"}
+        >
+        </MapView.Marker>
+
         <MapView.Marker
           coordinate={{
             latitude:Number(this.state.latitude),
             longitude:Number(this.state.longitude)
           }}
-          title={"Marker title"}
-          description={"Title Desc"}
-        />
+          title={"Me"}
+          description={"Description"}
+        >
+        <View style={styles.radius}>
+          <View style={styles.marker}/>
+        </View>
+        </MapView.Marker>
         </MapView>
+        <Button onPress={ this.TestFunction } title="Save Location" color="#FFF" />
 
       </View>
+      </ImageBackground>
+
 
     );
   }
@@ -80,11 +101,39 @@ const styles = StyleSheet.create({
     justifyContent:'center'
   },
   map: {
-    position:'absolute',
-    top:0,
-    left:0,
-    bottom:0,
-    right:0,
+      width: 300,
+      height: 400,
+      borderRadius: 20,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderColor: '#000',
+      borderWidth: 3,
+      marginTop: 15,
+      textAlign: 'center',
+    },
 
-  }
+    inner: {
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
+    radius: {
+      height:50,
+      width:50,
+      borderRadius:50/2,
+      overflow:'hidden',
+      backgroundColor:'rgba(0, 122, 255, 0.1)',
+      borderWidth: 1,
+      borderColor: 'rgba(0,112,255,0.3)',
+      justifyContent: 'center',
+      alignItems: 'center'
+    },
+    marker:{
+      height:20,
+      width:20,
+      borderWidth:3,
+      borderColor: 'white',
+      borderRadius:20/2,
+      overflow:'hidden',
+      backgroundColor:'#007AFF'
+    }
 });
