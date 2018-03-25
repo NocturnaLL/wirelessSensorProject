@@ -20,7 +20,7 @@ const styles = StyleSheet.create({
   titleText: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#FFF',
+    color: '#000',
     borderWidth: 1,
     borderStyle: 'solid',
     paddingTop: 10,

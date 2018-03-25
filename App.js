@@ -1,7 +1,20 @@
 import React from 'react';
-import {StyleSheet, ImageBackground,Text, View, Button, Alert} from 'react-native';
+import {StyleSheet, ImageBackground, Text, View,Alert,TextInput} from 'react-native';
 import MapView from 'react-native-maps';
 import Title from './app/components/Title/Title';
+import firebase from 'firebase';
+import Map from './app/components/Coordinates/getCoordinates'
+const config = {
+    apiKey: "AIzaSyDnAkoGDyvST4IzrnBB5o1OIEZBGQ7tZ60",
+    authDomain: "react-firebase-ebb66.firebaseapp.com",
+    databaseURL: "https://react-firebase-ebb66.firebaseio.com",
+    projectId: "react-firebase-ebb66",
+    storageBucket: "react-firebase-ebb66.appspot.com",
+  };
+  firebase.initializeApp(config);
+
+import {Container, Content, Header, Form, Input, Item, Button, Label} from 'native-base'
+
 export default class App extends React.Component {
   constructor(props) {
     super(props);
@@ -9,9 +22,12 @@ export default class App extends React.Component {
       latitude: null,
       longitude: null,
       error: null,
+      email:'',
+      password:''
     };
   }
   componentDidMount() {
+
     navigator.geolocation.getCurrentPosition(
       (position) => {
         this.setState({
@@ -24,54 +40,94 @@ export default class App extends React.Component {
       { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
     );
 
+
   }
+
 
   TestFunction() {
-    Alert.alert("Car location saved");
+    alert("Saved")
   }
+
+  signUpUser = (email,password) =>{
+    try{
+      console.log(password)
+      if(this.state.password.length<6){
+        alert("Password must be longer than 6 characters")
+        return;
+      }
+      else{
+        firebase.auth().createUserWithEmailAndPassword(email,password)
+        alert("Successful Signup")
+
+      }
+
+    }
+    catch(error){
+      console.log(error.toString())
+    }
+  }
+
+  loginUser = (email,password) =>{
+    try{
+      firebase.auth().signInWithEmailAndPassword(email,password).then(function(user){
+        alert("Successful login")
+        return(<Map id="three"></Map>)
+      })
+    }
+    catch(error){
+        console.log(error.toString())
+    }
+  }
+
+
   render() {
     return (
-      <ImageBackground source={require('./app/components/BackgroundImage/car4.jpg')} style={styles.container}>
-      <View style={styles.inner}>
 
-        <Title />
-        <Text style={styles.buttonText}>Latitude = {this.state.latitude}</Text>
-        <Text style={styles.buttonText}>Longitude = {this.state.longitude}</Text>
-        <MapView style={styles.map}
-          region={{
-            latitude:Number(this.state.latitude),
-            longitude:Number(this.state.longitude),
-            latitudeDelta:0.01,
-            longitudeDelta:0.01
-          }}
-        >
-        <MapView.Marker
-          coordinate={{
-            latitude:Number(this.state.latitude)+0.001,
-            longitude:Number(this.state.longitude+0.001)
-          }}
-          title={"My car"}
-          description={"My car"}
-        >
-        </MapView.Marker>
+    <View style={styles.container}>
+    <Container>
+    <Form>
+    <Item floatingLabel>
+    <Label>Email</Label>
+    <Input
+      autoCorrect={false}
+      autoCapitalize="none"
+      onChangeText={(email) => this.setState({email})}
+    />
 
-        <MapView.Marker
-          coordinate={{
-            latitude:Number(this.state.latitude),
-            longitude:Number(this.state.longitude)
-          }}
-          title={"Me"}
-          description={"Description"}
-        >
-        <View style={styles.radius}>
-          <View style={styles.marker}/>
-        </View>
-        </MapView.Marker>
-        </MapView>
-        <Button onPress={ this.TestFunction } title="Save Location" color="#FFF" />
+    </Item>
+    <Item floatingLabel>
+    <Label>Password</Label>
+    <Input
+      secureTextEntry={true}
+      autoCorrect={false}
+      autoCapitalize="none"
+      onChangeText={(password) => this.setState({password})}
+    />
 
-      </View>
-      </ImageBackground>
+    </Item>
+    <Button id='one' style={{marginTop:20}}
+      full
+      rounded
+      success
+      onPress={()=> this.loginUser(this.state.email,this.state.password)}
+    >
+    <Text style={{color:'white'}}>Login</Text>
+    </Button>
+    <Button id='two' style={{marginTop:20}}
+      full
+      rounded
+      primary
+      onPress={() => this.signUpUser(this.state.email,this.state.password)}
+    >
+    <Text style={{color:'white'}}>Signup</Text>
+    </Button>
+    </Form>
+    </Container>
+
+
+
+    </View>
+
 
 
     );
@@ -81,14 +137,14 @@ export default class App extends React.Component {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center'
+     backgroundColor: '#fff',
+     justifyContent: 'center',
+     padding:10
   },
   buttonText:
   {
     fontSize:18,
-    color:'white',
+    color:'black',
     alignSelf:'center'
   },
   button:
@@ -109,7 +165,7 @@ const styles = StyleSheet.create({
       borderColor: '#000',
       borderWidth: 3,
       marginTop: 15,
-      textAlign: 'center',
+
     },
 
     inner: {
