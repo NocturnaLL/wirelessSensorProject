@@ -1,11 +1,18 @@
 import React, { Component } from 'react';
 import {StyleSheet, ImageBackground, Text, View,Alert,TextInput,Button} from 'react-native';
 import MapView from 'react-native-maps';
+const mode = 'driving'; // 'walking';
+const origin = 'coords or address';
+const destination = 'coords or address';
+const APIKEY = 'XXXXXXXXXXXX';
+const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&key=${APIKEY}&mode=${mode}`;
 
 class Map extends Component {
   constructor(props) {
     super(props);
     this.calculateDist = this.calculateDist.bind(this);
+    this.car2route = this.car2route.bind(this);
+    this.car1route = this.car1route.bind(this);
     this.state = {
       car1lat:null,
       car1lng:null,
@@ -15,7 +22,9 @@ class Map extends Component {
       longitude: null,
       error: null,
       dist1: 0,
-      dist2: 0
+      dist2: 0,
+      showRoute1: false,
+      showRoute2: false,
     };
   }
   componentDidMount() {
@@ -52,6 +61,7 @@ class Map extends Component {
     var d = R * c;
     return d; // returns the distance in meter
   };
+
   calculateDist() {
     this.setState({
               dist1:Number.parseFloat(this.getDistance(this.state.latitude,this.state.longitude,this.state.car2lat,this.state.car2lng)/1000).toPrecision(3) + ' km',
@@ -59,19 +69,49 @@ class Map extends Component {
           })
   }
 
+  car1route() {
+    if(this.state.showRoute1===false){
+      this.setState({
+                showRoute1:true,
+            })
+    }else{
+      this.setState({
+                showRoute1:false,
+            })
+    }
+
+  }
+
+  car2route() {
+    if(this.state.showRoute2===false){
+      this.setState({
+                showRoute2:true,
+            })
+    }else{
+      this.setState({
+                showRoute2:false,
+            })
+    }
+
+  }
+  decode(t,e){for(var n,o,u=0,l=0,r=0,d= [],h=0,i=0,a=null,c=Math.pow(10,e||5);u<t.length;){a=null,h=0,i=0;do a=t.charCodeAt(u++)-63,i|=(31&a)<<h,h+=5;while(a>=32);n=1&i?~(i>>1):i>>1,h=i=0;do a=t.charCodeAt(u++)-63,i|=(31&a)<<h,h+=5;while(a>=32);o=1&i?~(i>>1):i>>1,l+=n,r+=o,d.push([l/c,r/c])}return d=d.map(function(t){return{latitude:t[0],longitude:t[1]}})}
+// transforms something like this geocFltrhVvDsEtA}ApSsVrDaEvAcBSYOS_@... to an array of coordinates
+
 
   render() {
     return (
       <View style={{ flexGrow: 1, alignItems: 'center', justifyContent: 'center' }}>
 <Text id='carOne'>Distance to Car1: {this.state.dist1}</Text>
 <Text id='carTwo'>Distance to Car2: {this.state.dist2}</Text>
-<Button title="Calculate Distance" onPress={this.calculateDist}/>
+<Button id='distance' title="Calculate Distance" onPress={this.calculateDist}/>
+<Button id='route' title="Show route for car1" onPress={this.car1route}/>
+<Button id='route2' title="Show route for car2" onPress={this.car2route}/>
 <Text style={styles.buttonText}>Car1 Latitude = {this.state.latitude}</Text>
 <Text style={styles.buttonText}>Car1 Longitude = {this.state.longitude}</Text>
 <Text style={styles.buttonText}>Car2 Latitude = {this.state.car1lat}</Text>
 <Text style={styles.buttonText}>Car2 Longitude = {this.state.car1lng}</Text>
-<Text style={styles.buttonText}>Latitude = {this.state.car2lat}</Text>
-<Text style={styles.buttonText}>Longitude = {this.state.car2lng}</Text>
+<Text style={styles.buttonText}>Users Latitude = {this.state.car2lat}</Text>
+<Text style={styles.buttonText}>Users Longitude = {this.state.car2lng}</Text>
 <MapView style={styles.map}
   region={{
     latitude:Number(this.state.latitude),
@@ -114,6 +154,26 @@ class Map extends Component {
   <View style={styles.marker}/>
 </View>
 </MapView.Marker>
+{ this.state.showRoute1 &&
+  <MapView.Polyline
+      coordinates={[
+          {latitude: this.state.latitude, longitude: this.state.longitude}, // optional
+          {latitude: this.state.car1lat, longitude: this.state.car1lng}, // optional
+      ]}
+      strokeWidth={4}
+  />
+}
+
+{ this.state.showRoute2 &&
+  <MapView.Polyline
+      coordinates={[
+          {latitude: this.state.latitude, longitude: this.state.longitude}, // optional
+          {latitude: this.state.car2lat, longitude: this.state.car2lng}, // optional
+      ]}
+      strokeWidth={4}
+  />
+}
+
 </MapView>
   </View>
     );
@@ -124,10 +184,10 @@ const styles = StyleSheet.create({
 
   button:
   {
-    height:40,
+    height:10,
     backgroundColor:'#48BBEC',
     borderColor:'#48BBEC',
-    width:80,
+    width:10,
     alignSelf:'stretch',
     justifyContent:'center'
   },
