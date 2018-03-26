@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { View, TextInput, Text } from 'react-native';
 import firebase from 'firebase';
-
+import Title from '../Title/Title'
 const config = {
     apiKey: "AIzaSyDnAkoGDyvST4IzrnBB5o1OIEZBGQ7tZ60",
     authDomain: "react-firebase-ebb66.firebaseapp.com",
@@ -55,7 +55,7 @@ class Authentication extends Component {
   render() {
     return (
       <View style={styles.container}>
-
+      <Title/>
       <Container>
       <Form>
       <Item floatingLabel>

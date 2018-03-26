@@ -1,22 +1,35 @@
 import React, { Component } from 'react';
 import {StyleSheet, ImageBackground, Text, View,Alert,TextInput,Button} from 'react-native';
 import MapView from 'react-native-maps';
+
 class Map extends Component {
   constructor(props) {
     super(props);
+    this.calculateDist = this.calculateDist.bind(this);
     this.state = {
+      car1lat:null,
+      car1lng:null,
+      car2lat:null,
+      car2lng:null,
       latitude: null,
       longitude: null,
       error: null,
+      dist1: 0,
+      dist2: 0
     };
   }
   componentDidMount() {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         this.setState({
+          car1lat:position.coords.latitude +0.003,
+          car1lng:position.coords.longitude +0.003,
+          car2lat:position.coords.latitude +0.002,
+          car2lng:position.coords.longitude -0.002,
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           error: null,
+
         });
       },
       (error) => this.setState({ error: error.message }),
@@ -24,14 +37,41 @@ class Map extends Component {
     );
 
   }
+  rad(x) {
+  return x * Math.PI / 180;
+  };
+
+  getDistance(c1lat,c1lng,c2lat,c2lng) {
+    var R = 6378137; // Earth’s mean radius in meter
+    var dLat = this.rad(c2lat - c1lat);
+    var dLong = this.rad(c2lng - c1lng);
+    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(this.rad(c1lat)) * Math.cos(this.rad(c2lat)) *
+      Math.sin(dLong / 2) * Math.sin(dLong / 2);
+    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    var d = R * c;
+    return d; // returns the distance in meter
+  };
+  calculateDist() {
+    this.setState({
+              dist1:Number.parseFloat(this.getDistance(this.state.latitude,this.state.longitude,this.state.car2lat,this.state.car2lng)/1000).toPrecision(3) + ' km',
+              dist2:Number.parseFloat(this.getDistance(this.state.latitude,this.state.longitude,this.state.car1lat,this.state.car1lng)/1000).toPrecision(3) + ' km'
+          })
+  }
 
 
   render() {
     return (
       <View style={{ flexGrow: 1, alignItems: 'center', justifyContent: 'center' }}>
-
-<Text style={styles.buttonText}>Latitude = {this.state.latitude}</Text>
-<Text style={styles.buttonText}>Longitude = {this.state.longitude}</Text>
+<Text id='carOne'>Distance to Car1: {this.state.dist1}</Text>
+<Text id='carTwo'>Distance to Car2: {this.state.dist2}</Text>
+<Button title="Calculate Distance" onPress={this.calculateDist}/>
+<Text style={styles.buttonText}>Car1 Latitude = {this.state.latitude}</Text>
+<Text style={styles.buttonText}>Car1 Longitude = {this.state.longitude}</Text>
+<Text style={styles.buttonText}>Car2 Latitude = {this.state.car1lat}</Text>
+<Text style={styles.buttonText}>Car2 Longitude = {this.state.car1lng}</Text>
+<Text style={styles.buttonText}>Latitude = {this.state.car2lat}</Text>
+<Text style={styles.buttonText}>Longitude = {this.state.car2lng}</Text>
 <MapView style={styles.map}
   region={{
     latitude:Number(this.state.latitude),
@@ -39,14 +79,16 @@ class Map extends Component {
     latitudeDelta:0.01,
     longitudeDelta:0.01
   }}
+
 >
 <MapView.Marker
   coordinate={{
-    latitude:Number(this.state.latitude)+0.001,
-    longitude:Number(this.state.longitude+0.001)
+    latitude:Number(this.state.latitude)+0.003,
+    longitude:Number(this.state.longitude+0.003)
   }}
   title={"Car1"}
   description={""}
+
 >
 </MapView.Marker>
 
@@ -73,10 +115,7 @@ class Map extends Component {
 </View>
 </MapView.Marker>
 </MapView>
-
-
-
-      </View>
+  </View>
     );
   }
 }
