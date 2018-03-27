@@ -13,6 +13,7 @@ class Map extends Component {
     this.calculateDist = this.calculateDist.bind(this);
     this.car2route = this.car2route.bind(this);
     this.car1route = this.car1route.bind(this);
+    this.save= this.save.bind(this);
     this.state = {
       car1lat:null,
       car1lng:null,
@@ -81,6 +82,9 @@ class Map extends Component {
     }
 
   }
+  save(){
+    console.log("Database operations...")
+  }
 
   car2route() {
     if(this.state.showRoute2===false){
@@ -109,6 +113,7 @@ class Map extends Component {
 <Button id='distance' title="Calculate Distance" onPress={this.calculateDist}/>
 <Button id='route' title="Car1" onPress={this.car1route}/>
 <Button id='route2' title="Car2" onPress={this.car2route}/>
+<Button id='save' title="Save" onPress={this.save}/>
 </View>
 <MapView style={styles.map}
   region={{
