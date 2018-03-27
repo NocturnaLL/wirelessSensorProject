@@ -100,18 +100,16 @@ class Map extends Component {
 
   render() {
     return (
-      <View style={{ flexGrow: 1, alignItems: 'center', justifyContent: 'center' }}>
-<Text id='carOne'>Distance to Car1: {this.state.dist1}</Text>
-<Text id='carTwo'>Distance to Car2: {this.state.dist2}</Text>
+      <View style={{ flexGrow: 1,justifyContent: 'center',  alignItems: 'center' }}>
+<Text id='carOne'>Distance to Car1: {this.state.dist1}, Car2: {this.state.dist2} </Text>
+<Text id='carOneCoor'style={styles.buttonText}>Car1 Latitude = {this.state.latitude} Longitude = {this.state.longitude} </Text>
+<Text id='carTwoCoor' style={styles.buttonText}>Car2 Latitude = {this.state.car1lat} Longitude = {this.state.car1lng}</Text>
+<Text id='user' style={styles.buttonText}>Users Latitude = {this.state.car2lat} Longitude = {this.state.car2lng}</Text>
+<View style={{flexDirection:"row"}}>
 <Button id='distance' title="Calculate Distance" onPress={this.calculateDist}/>
-<Button id='route' title="Show route for car1" onPress={this.car1route}/>
-<Button id='route2' title="Show route for car2" onPress={this.car2route}/>
-<Text style={styles.buttonText}>Car1 Latitude = {this.state.latitude}</Text>
-<Text style={styles.buttonText}>Car1 Longitude = {this.state.longitude}</Text>
-<Text style={styles.buttonText}>Car2 Latitude = {this.state.car1lat}</Text>
-<Text style={styles.buttonText}>Car2 Longitude = {this.state.car1lng}</Text>
-<Text style={styles.buttonText}>Users Latitude = {this.state.car2lat}</Text>
-<Text style={styles.buttonText}>Users Longitude = {this.state.car2lng}</Text>
+<Button id='route' title="Car1" onPress={this.car1route}/>
+<Button id='route2' title="Car2" onPress={this.car2route}/>
+</View>
 <MapView style={styles.map}
   region={{
     latitude:Number(this.state.latitude),
@@ -188,8 +186,8 @@ const styles = StyleSheet.create({
     backgroundColor:'#48BBEC',
     borderColor:'#48BBEC',
     width:10,
-    alignSelf:'stretch',
-    justifyContent:'center'
+    justifyContent:'center',
+    textAlignVertical: "center"
   },
   map: {
       width: 300,
