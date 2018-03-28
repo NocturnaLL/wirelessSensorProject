@@ -1,6 +1,8 @@
 import React, { Component } from 'react';
 import {StyleSheet, ImageBackground, Text, View,Alert,TextInput,Button} from 'react-native';
 import MapView from 'react-native-maps';
+
+import firebase from 'firebase';
 const mode = 'driving'; // 'walking';
 const origin = 'coords or address';
 const destination = 'coords or address';
@@ -26,7 +28,9 @@ class Map extends Component {
       dist2: 0,
       showRoute1: false,
       showRoute2: false,
+      carInfoList: []
     };
+    this.getCarInfo();
   }
   componentDidMount() {
     navigator.geolocation.getCurrentPosition(
@@ -83,7 +87,18 @@ class Map extends Component {
 
   }
   save(){
-    console.log("Database operations...")
+    const userId = firebase.auth().currentUser.uid;
+    firebase.database().ref(`/CarInfo/${userId}`).push({
+      name: 'Name',
+      description: 'Description',
+      latitude: this.state.latitude,
+      longitude: this.state.longitude,
+      car1Latitude: this.state.car1lat,
+      car1Longitude: this.state.car1lng,
+      car2Latitude: this.state.car2lat,
+      car2Longitude: this.state.car2lng,
+    });
+    alert("Locations saved successfully.")
   }
 
   car2route() {
@@ -101,7 +116,35 @@ class Map extends Component {
   decode(t,e){for(var n,o,u=0,l=0,r=0,d= [],h=0,i=0,a=null,c=Math.pow(10,e||5);u<t.length;){a=null,h=0,i=0;do a=t.charCodeAt(u++)-63,i|=(31&a)<<h,h+=5;while(a>=32);n=1&i?~(i>>1):i>>1,h=i=0;do a=t.charCodeAt(u++)-63,i|=(31&a)<<h,h+=5;while(a>=32);o=1&i?~(i>>1):i>>1,l+=n,r+=o,d.push([l/c,r/c])}return d=d.map(function(t){return{latitude:t[0],longitude:t[1]}})}
 // transforms something like this geocFltrhVvDsEtA}ApSsVrDaEvAcBSYOS_@... to an array of coordinates
 
+  getCarInfo(){
+    const userId = firebase.auth().currentUser.uid;
 
+    firebase.database().ref(`/CarInfo/${userId}`).on('value', snapshot => {
+      const carInfoList = [];
+        snapshot.forEach(child => {
+          carInfoList.push(child.val())
+        });
+        this.setState({
+          carInfoList
+        });
+    })
+  }
+  renderCarInfo(){
+    return this.state.carInfoList
+    .map(
+      carInfo =>
+      <MapView.Marker
+        coordinate={{
+          latitude:carInfo.latitude,
+          longitude:carInfo.longitude
+        }}
+        title={carInfo.name}
+        description={carInfo.description}
+
+      >
+      </MapView.Marker>
+    )
+  }
   render() {
     return (
       <View style={{ flexGrow: 1,justifyContent: 'center',  alignItems: 'center' }}>
@@ -122,8 +165,8 @@ class Map extends Component {
     latitudeDelta:0.01,
     longitudeDelta:0.01
   }}
-
 >
+
 <MapView.Marker
   coordinate={{
     latitude:Number(this.state.latitude)+0.003,

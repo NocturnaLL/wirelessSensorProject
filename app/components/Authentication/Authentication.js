@@ -2,14 +2,7 @@ import React, { Component } from 'react';
 import { View, TextInput, Text } from 'react-native';
 import firebase from 'firebase';
 import Title from '../Title/Title'
-const config = {
-    apiKey: "AIzaSyDnAkoGDyvST4IzrnBB5o1OIEZBGQ7tZ60",
-    authDomain: "react-firebase-ebb66.firebaseapp.com",
-    databaseURL: "https://react-firebase-ebb66.firebaseio.com",
-    projectId: "react-firebase-ebb66",
-    storageBucket: "react-firebase-ebb66.appspot.com",
-  };
-  firebase.initializeApp(config);
+
 
 import {Container, Content, Header, Form, Input, Item, Button, Label} from 'native-base'
 class Authentication extends Component {
@@ -22,14 +15,14 @@ class Authentication extends Component {
   }
   signUpUser = (email,password) =>{
     try{
-      console.log(password)
+      
       if(this.state.password.length<6){
         alert("Password must be longer than 6 characters")
         return;
       }
       else{
         firebase.auth().createUserWithEmailAndPassword(email,password)
-        alert("Successful Signup")
+        alert("Signup successfully")
 
       }
 
@@ -42,7 +35,7 @@ class Authentication extends Component {
   loginUser = (email,password) =>{
     try{
       firebase.auth().signInWithEmailAndPassword(email,password).then(function(user){
-        alert("Successful login")
+        alert("Login successful ")
 
       })
     }
