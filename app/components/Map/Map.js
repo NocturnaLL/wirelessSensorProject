@@ -1,19 +1,22 @@
 import React, { Component } from 'react';
 import {StyleSheet, ImageBackground, Text, View,Alert,TextInput,Button} from 'react-native';
 import MapView from 'react-native-maps';
+import MapViewDirections from 'react-native-maps-directions';
 
 import firebase from 'firebase';
 const mode = 'driving'; // 'walking';
 const origin = 'coords or address';
 const destination = 'coords or address';
-const APIKEY = 'XXXXXXXXXXXX';
+const APIKEY = 'AIzaSyCKA32YUr4J24dJe0t4N0Enr0jEQ61W3Dk';
 const url = `https://maps.googleapis.com/maps/api/directions/json?origin=${origin}&destination=${destination}&key=${APIKEY}&mode=${mode}`;
+
+const coordinates = [{latitude:42.0882 , longitude:-75.9695},{latitude:42.0893553 +0.003 , longitude:-75.9697 +0.003}]
 
 class Map extends Component {
   constructor(props) {
     super(props);
     this.calculateDist = this.calculateDist.bind(this);
-    this.car2route = this.car2route.bind(this);
+    this.refresh = this.refresh.bind(this);
     this.car1route = this.car1route.bind(this);
     this.save= this.save.bind(this);
     this.state = {
@@ -69,8 +72,8 @@ class Map extends Component {
 
   calculateDist() {
     this.setState({
-              dist1:Number.parseFloat(this.getDistance(this.state.latitude,this.state.longitude,this.state.car2lat,this.state.car2lng)/1000).toPrecision(3) + ' km',
-              dist2:Number.parseFloat(this.getDistance(this.state.latitude,this.state.longitude,this.state.car1lat,this.state.car1lng)/1000).toPrecision(3) + ' km'
+              dist1:Number.parseFloat(this.getDistance(this.state.latitude,this.state.longitude,this.state.car1lat,this.state.car1lng)/1000).toPrecision(3) + ' km',
+
           })
   }
 
@@ -93,24 +96,29 @@ class Map extends Component {
       description: 'Description',
       latitude: this.state.latitude,
       longitude: this.state.longitude,
-      car1Latitude: this.state.car1lat,
-      car1Longitude: this.state.car1lng,
-      car2Latitude: this.state.car2lat,
-      car2Longitude: this.state.car2lng,
+      carLatitude: this.state.car1lat,
+      carLongitude: this.state.car1lng,
     });
     alert("Locations saved successfully.")
   }
 
-  car2route() {
-    if(this.state.showRoute2===false){
-      this.setState({
-                showRoute2:true,
-            })
-    }else{
-      this.setState({
-                showRoute2:false,
-            })
-    }
+  refresh() {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        this.setState({
+          car1lat:42.0893553 +0.003,
+          car1lng:-75.9697 +0.003,
+          car2lat:position.coords.latitude +0.002,
+          car2lng:position.coords.longitude -0.002,
+          latitude: 42.0882,
+          longitude: -75.9695,
+          error: null,
+
+        });
+      },
+      (error) => this.setState({ error: error.message }),
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
+    );
 
   }
   decode(t,e){for(var n,o,u=0,l=0,r=0,d= [],h=0,i=0,a=null,c=Math.pow(10,e||5);u<t.length;){a=null,h=0,i=0;do a=t.charCodeAt(u++)-63,i|=(31&a)<<h,h+=5;while(a>=32);n=1&i?~(i>>1):i>>1,h=i=0;do a=t.charCodeAt(u++)-63,i|=(31&a)<<h,h+=5;while(a>=32);o=1&i?~(i>>1):i>>1,l+=n,r+=o,d.push([l/c,r/c])}return d=d.map(function(t){return{latitude:t[0],longitude:t[1]}})}
@@ -148,14 +156,13 @@ class Map extends Component {
   render() {
     return (
       <View style={{ flexGrow: 1,justifyContent: 'center',  alignItems: 'center' }}>
-<Text id='carOne'>Distance to Car1: {this.state.dist1}, Car2: {this.state.dist2} </Text>
-<Text id='carOneCoor'style={styles.buttonText}>Car1 Latitude = {this.state.latitude} Longitude = {this.state.longitude} </Text>
-<Text id='carTwoCoor' style={styles.buttonText}>Car2 Latitude = {this.state.car1lat} Longitude = {this.state.car1lng}</Text>
-<Text id='user' style={styles.buttonText}>Users Latitude = {this.state.car2lat} Longitude = {this.state.car2lng}</Text>
+<Text id='carOne'>Distance to Car: {this.state.dist1}</Text>
+<Text id='user'style={styles.buttonText}>Car Latitude = {this.state.latitude} Longitude = {this.state.longitude} </Text>
+<Text id='car' style={styles.buttonText}>Users Latitude = {this.state.car1lat} Longitude = {this.state.car1lng}</Text>
 <View style={{flexDirection:"row"}}>
 <Button id='distance' title="Calculate Distance" onPress={this.calculateDist}/>
-<Button id='route' title="Car1" onPress={this.car1route}/>
-<Button id='route2' title="Car2" onPress={this.car2route}/>
+<Button id='route' title="Car" onPress={this.car1route}/>
+<Button id='route2' title="Refresh" onPress={this.refresh}/>
 <Button id='save' title="Save" onPress={this.save}/>
 </View>
 <MapView style={styles.map}
@@ -172,21 +179,13 @@ class Map extends Component {
     latitude:Number(this.state.latitude)+0.003,
     longitude:Number(this.state.longitude+0.003)
   }}
-  title={"Car1"}
+  title={"Car"}
   description={""}
 
 >
 </MapView.Marker>
 
-<MapView.Marker
-  coordinate={{
-    latitude:Number(this.state.latitude)+0.002,
-    longitude:Number(this.state.longitude-0.002)
-  }}
-  title={"Car2"}
-  description={""}
->
-</MapView.Marker>
+
 
 <MapView.Marker
   coordinate={{
@@ -200,24 +199,20 @@ class Map extends Component {
   <View style={styles.marker}/>
 </View>
 </MapView.Marker>
-{ this.state.showRoute1 &&
-  <MapView.Polyline
-      coordinates={[
-          {latitude: this.state.latitude, longitude: this.state.longitude}, // optional
-          {latitude: this.state.car1lat, longitude: this.state.car1lng}, // optional
-      ]}
-      strokeWidth={4}
-  />
-}
 
-{ this.state.showRoute2 &&
-  <MapView.Polyline
-      coordinates={[
-          {latitude: this.state.latitude, longitude: this.state.longitude}, // optional
-          {latitude: this.state.car2lat, longitude: this.state.car2lng}, // optional
-      ]}
-      strokeWidth={4}
+
+{ this.state.showRoute1 &&
+  <MapViewDirections
+      origin={
+          coordinates[0] // optional
+      }
+      destination={coordinates[1]}
+      apikey={APIKEY}
+      strokeWidth={3}
+      strokeColor="hotpink"
+      id="MapView2"
   />
+
 }
 
 </MapView>
