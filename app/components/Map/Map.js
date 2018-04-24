@@ -19,11 +19,10 @@ class Map extends Component {
     this.refresh = this.refresh.bind(this);
     this.car1route = this.car1route.bind(this);
     this.save= this.save.bind(this);
+    this.dropPin=this.dropPin.bind(this);
     this.state = {
       car1lat:null,
       car1lng:null,
-      car2lat:null,
-      car2lng:null,
       latitude: null,
       longitude: null,
       error: null,
@@ -31,6 +30,7 @@ class Map extends Component {
       dist2: 0,
       showRoute1: false,
       showRoute2: false,
+      dropPin1: false,
       carInfoList: []
     };
     this.getCarInfo();
@@ -39,10 +39,6 @@ class Map extends Component {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         this.setState({
-          car1lat:position.coords.latitude +0.003,
-          car1lng:position.coords.longitude +0.003,
-          car2lat:position.coords.latitude +0.002,
-          car2lng:position.coords.longitude -0.002,
           latitude: position.coords.latitude,
           longitude: position.coords.longitude,
           error: null,
@@ -76,6 +72,28 @@ class Map extends Component {
 
           })
   }
+  dropPin() {
+    if(this.state.dropPin1==false){
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          this.setState({
+            car1lat: position.coords.latitude,
+            car1lng: position.coords.longitude,
+            error: null,
+
+          });
+        },
+        (error) => this.setState({ error: error.message }),
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 1000 },
+      );
+      this.setState({
+                dropPin1:true,
+            })
+    }
+
+
+  }
+
 
   car1route() {
     if(this.state.showRoute1===false){
@@ -106,12 +124,8 @@ class Map extends Component {
     navigator.geolocation.getCurrentPosition(
       (position) => {
         this.setState({
-          car1lat:42.0893553 +0.003,
-          car1lng:-75.9697 +0.003,
-          car2lat:position.coords.latitude +0.002,
-          car2lng:position.coords.longitude -0.002,
-          latitude: 42.0882,
-          longitude: -75.9695,
+          latitude: this.state.latitude,
+          longitude: this.state.longitude,
           error: null,
 
         });
@@ -157,12 +171,13 @@ class Map extends Component {
     return (
       <View style={{ flexGrow: 1,justifyContent: 'center',  alignItems: 'center' }}>
 <Text id='carOne'>Distance to Car: {this.state.dist1}</Text>
-<Text id='user'style={styles.buttonText}>Car Latitude = {this.state.latitude} Longitude = {this.state.longitude} </Text>
-<Text id='car' style={styles.buttonText}>Users Latitude = {this.state.car1lat} Longitude = {this.state.car1lng}</Text>
+<Text id='user'style={styles.buttonText}>User Latitude = {this.state.latitude} Longitude = {this.state.longitude} </Text>
+<Text id='car' style={styles.buttonText}>Car Latitude = {this.state.car1lat} Longitude = {this.state.car1lng}</Text>
 <View style={{flexDirection:"row"}}>
-<Button id='distance' title="Calculate Distance" onPress={this.calculateDist}/>
+<Button id='distance' title="Distance" onPress={this.calculateDist}/>
 <Button id='route' title="Car" onPress={this.car1route}/>
 <Button id='route2' title="Refresh" onPress={this.refresh}/>
+<Button id='dropPin' title="DropPin" onPress={this.dropPin}/>
 <Button id='save' title="Save" onPress={this.save}/>
 </View>
 <MapView style={styles.map}
@@ -174,17 +189,18 @@ class Map extends Component {
   }}
 >
 
+{ this.state.dropPin1 &&
 <MapView.Marker
   coordinate={{
-    latitude:Number(this.state.latitude)+0.003,
-    longitude:Number(this.state.longitude+0.003)
+    latitude:Number(this.state.car1lat),
+    longitude:Number(this.state.car1lng)
   }}
   title={"Car"}
   description={""}
 
 >
 </MapView.Marker>
-
+}
 
 
 <MapView.Marker
@@ -204,9 +220,9 @@ class Map extends Component {
 { this.state.showRoute1 &&
   <MapViewDirections
       origin={
-          coordinates[0] // optional
+          {latitude:Number(this.state.latitude) , longitude:Number(this.state.longitude)} // optional
       }
-      destination={coordinates[1]}
+      destination={{latitude:Number(this.state.car1lat)  , longitude:Number(this.state.car1lng) }}
       apikey={APIKEY}
       strokeWidth={3}
       strokeColor="hotpink"
